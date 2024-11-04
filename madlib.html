@@ -1,0 +1,127 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>React Madlibs Game</title>
+</head>
+<body>
+  <!-- Root element where our React components will render -->
+  <div id="root"></div>
+
+  <!-- React and ReactDOM from CDN -->
+  <script src="https://unpkg.com/react@17/umd/react.development.js" crossorigin></script>
+  <script src="https://unpkg.com/react-dom@17/umd/react-dom.development.js" crossorigin></script>
+
+  <!-- Babel for JSX support in the browser (only for development) -->
+  <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+
+  <!-- Main JavaScript code with Babel to compile JSX -->
+  <script type="text/babel">
+    // Madlib.js - Main Component
+    function Madlib() {
+      const [words, setWords] = React.useState(null);
+      const [selectedStory, setSelectedStory] = React.useState(null);
+
+      const handleFormSubmit = (formData) => {
+        setWords(formData);
+      };
+
+      const handleStoryRestart = () => {
+        setWords(null);
+      };
+
+      const handleStorySelect = (story) => {
+        setSelectedStory(story);
+      };
+
+      return (
+        <div>
+          {!selectedStory && <StorySelector onSelect={handleStorySelect} />}
+          {selectedStory && !words && <MadlibForm onSubmit={handleFormSubmit} selectedStory={selectedStory} />}
+          {words && <MadlibStory words={words} selectedStory={selectedStory} onRestart={handleStoryRestart} />}
+        </div>
+      );
+    }
+
+    // MadlibForm.js - Form Component
+    function MadlibForm({ onSubmit, selectedStory }) {
+      const [formData, setFormData] = React.useState({
+        noun: "",
+        verb: "",
+        adjective: "",
+        adverb: ""
+      });
+
+      const handleChange = (e) => {
+        const { name, value } = e.target;
+        setFormData((prevData) => ({ ...prevData, [name]: value }));
+      };
+
+      const handleSubmit = (e) => {
+        e.preventDefault();
+        if (Object.values(formData).every((val) => val.trim())) {
+          onSubmit(formData);
+        }
+      };
+
+      return (
+        <form onSubmit={handleSubmit}>
+          <h2>Fill in the words for "{selectedStory.title}"</h2>
+          <input type="text" name="noun" value={formData.noun} onChange={handleChange} placeholder="Noun" required />
+          <input type="text" name="verb" value={formData.verb} onChange={handleChange} placeholder="Verb" required />
+          <input type="text" name="adjective" value={formData.adjective} onChange={handleChange} placeholder="Adjective" required />
+          <input type="text" name="adverb" value={formData.adverb} onChange={handleChange} placeholder="Adverb" required />
+          <button type="submit">Generate Story</button>
+        </form>
+      );
+    }
+
+    // MadlibStory.js - Story Display Component
+    function MadlibStory({ words, selectedStory, onRestart }) {
+      const { noun, verb, adjective, adverb } = words;
+      const storyTemplate = selectedStory.template
+        .replace("{noun}", noun)
+        .replace("{verb}", verb)
+        .replace("{adjective}", adjective)
+        .replace("{adverb}", adverb);
+
+      return (
+        <div>
+          <h2>Your Madlib Story</h2>
+          <p>{storyTemplate}</p>
+          <button onClick={onRestart}>Restart</button>
+        </div>
+      );
+    }
+
+    // StorySelector.js - Story Selection Component (Super Bonus)
+    function StorySelector({ onSelect }) {
+      const stories = [
+        {
+          title: "A Day in the Park",
+          template: "Once upon a time, a {adjective} {noun} decided to {verb} {adverb} in the park."
+        },
+        {
+          title: "The Magical Adventure",
+          template: "In a {adjective} forest, a {noun} decided to {verb} {adverb} on an adventure."
+        }
+      ];
+
+      return (
+        <div>
+          <h2>Select a Story</h2>
+          {stories.map((story, index) => (
+            <button key={index} onClick={() => onSelect(story)}>
+              {story.title}
+            </button>
+          ))}
+        </div>
+      );
+    }
+
+    // Render the main Madlib component
+    ReactDOM.render(<Madlib />, document.getElementById("root"));
+  </script>
+</body>
+</html>
